@@ -1,79 +1,21 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom"; // import useNavigate
+import { useState } from "react";
 import { Search, ChevronRight } from "lucide-react";
-import gsap from "gsap";
+import { useNavigate } from "react-router-dom";
 
 export default function LandingPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
-
-  const heroRef = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLDivElement>(null);
-  const recentRef = useRef<Array<HTMLButtonElement | undefined>>([]);
-  const searchIconRef = useRef<SVGSVGElement>(null);
-  const footerRef = useRef<HTMLDivElement>(null);
-
-  const navigate = useNavigate(); // hook for navigation
+  const navigate = useNavigate();
 
   const handleSearch = () => {
-    if (!searchQuery.trim()) return; // ignore empty searches
-    navigate("/results", { state: { query: searchQuery } }); // navigate to results page and pass searchQuery
-    setSearchQuery("");
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSearch();
-  };
-  useEffect(() => {
-    const storedNames: string[] = JSON.parse(
-      localStorage.getItem("recentProfessors") || "[]"
-    );
-    setRecentSearches(storedNames);
-  }, []);
-
-  useEffect(() => {
-    const tl = gsap.timeline();
-
-    tl.from(heroRef.current, {
-      y: -100,
-      opacity: 0,
-      duration: 1.2,
-      ease: "power3.out",
-    }).from(
-      searchRef.current,
-      { y: -50, opacity: 0, duration: 1, ease: "power3.out" },
-      "-=0.7"
-    );
-
-    recentRef.current.forEach((el, i) => {
-      if (!el) return;
-      gsap.fromTo(
-        el,
-        { y: -30, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1,
-          delay: 0.5 + i * 0.15,
-          ease: "elastic.out(1.5, 0.6)",
-        }
-      );
-    });
-
-    if (footerRef.current) {
-      tl.from(
-        footerRef.current,
-        { y: 50, opacity: 0, duration: 1, ease: "power3.out" },
-        "-=0.5"
-      );
+    if (searchQuery.trim() !== "") {
+      navigate(`/results?professor=${encodeURIComponent(searchQuery.trim())}`);
     }
-  }, []);
+  };
 
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <div
-        ref={heroRef}
         className="relative h-72 bg-cover bg-center"
         style={{
           backgroundImage:
@@ -95,77 +37,64 @@ export default function LandingPage() {
       </div>
 
       {/* Search Section */}
-      <div ref={searchRef} className="max-w-2xl mx-auto px-6 py-16 relative">
+      <div className="max-w-2xl mx-auto px-6 py-16 relative">
         <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
           Enter a Professor to start
         </h2>
 
-        {/* Search Bar */}
+        {/* Search Bar (Functional) */}
         <div className="flex gap-0 mb-16">
-          <div className="flex flex-1 border border-gray-300 rounded focus-within:ring-2 focus-within:ring-gray-400">
+          <div className="flex flex-1 border border-gray-300 rounded">
             <input
               type="text"
               placeholder="Enter professor name..."
+              className="flex-1 px-6 py-3 rounded-l focus:outline-none text-gray-700"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="flex-1 px-6 py-3 rounded-l focus:outline-none text-gray-700"
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
             <button
+              className="bg-[#39302B] text-white px-6 py-3 rounded-r hover:bg-[#2f2824] transition-colors"
               onClick={handleSearch}
-              className="bg-[#39302B] hover:bg-black text-white px-6 py-3 rounded-r transition-colors"
-              onMouseEnter={() => {
-                if (searchIconRef.current) {
-                  gsap.to(searchIconRef.current, {
-                    rotate: 15,
-                    duration: 0.3,
-                    ease: "elastic.out(1, 0.5)",
-                  });
-                }
-              }}
-              onMouseLeave={() => {
-                if (searchIconRef.current) {
-                  gsap.to(searchIconRef.current, {
-                    rotate: 0,
-                    duration: 0.5,
-                    ease: "elastic.out(1, 0.5)",
-                  });
-                }
-              }}
             >
-              <Search ref={searchIconRef} className="w-5 h-5" />
+              <Search className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Recently Searched */}
+        {/* Recently Searched (Static Example) */}
         <div>
           <h3 className="text-xl font-semibold text-gray-900 mb-6">
             Recently Searched
           </h3>
           <div className="flex flex-wrap gap-4 justify-center">
-            {recentSearches.length === 0 && (
-              <p className="text-gray-500">No recent searches</p>
-            )}
-            {recentSearches.slice(0, 3).map((name, index) => (
-              <button
-                key={index}
-                ref={(el) => {
-                  recentRef.current[index] = el ?? undefined;
-                }}
-                className="flex items-center gap-3 px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 rounded hover:bg-gray-50 transition-colors text-sm sm:text-base"
-                onClick={() => navigate("/results", { state: { query: name } })}
-              >
-                <span className="text-gray-700">{name}</span>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
-              </button>
-            ))}
+            <button
+              onClick={() => navigate("/results?professor=Dr.%20Smith")}
+              className="flex items-center gap-3 px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 rounded bg-gray-50 text-sm sm:text-base hover:bg-gray-100 transition"
+            >
+              <span className="text-gray-700">Dr. Smith</span>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </button>
+            <button
+              onClick={() => navigate("/results?professor=Dr.%20Johnson")}
+              className="flex items-center gap-3 px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 rounded bg-gray-50 text-sm sm:text-base hover:bg-gray-100 transition"
+            >
+              <span className="text-gray-700">Dr. Johnson</span>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </button>
+            <button
+              onClick={() => navigate("/results?professor=Dr.%20Lee")}
+              className="flex items-center gap-3 px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 rounded bg-gray-50 text-sm sm:text-base hover:bg-gray-100 transition"
+            >
+              <span className="text-gray-700">Dr. Lee</span>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </button>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div ref={footerRef} className="text-center py-8 text-gray-500 text-sm">
+      <div className="text-center py-8 text-gray-500 text-sm">
         All data is gathered from the{" "}
         <a
           href="https://planetterp.com"
