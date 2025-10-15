@@ -66,16 +66,18 @@ export default function ResultsPage() {
         setSelectedCourse(uniqueCourses[0]);
       }
 
-      // Store the searched professor name in localStorage
       const storedNames: string[] = JSON.parse(
         localStorage.getItem("recentProfessors") || "[]"
       );
-
-      if (!storedNames.includes(data.name)) {
-        storedNames.unshift(data.name); // add to start
-        if (storedNames.length > 10) storedNames.pop(); // keep last 10
-        localStorage.setItem("recentProfessors", JSON.stringify(storedNames));
+      const existingIndex = storedNames.indexOf(data.name);
+      if (existingIndex !== -1) {
+        storedNames.splice(existingIndex, 1);
       }
+      storedNames.unshift(data.name);
+      if (storedNames.length > 3) {
+        storedNames.pop();
+      }
+      localStorage.setItem("recentProfessors", JSON.stringify(storedNames));
     } catch (error) {
       setSearchResult({ error: "Failed to fetch results" });
     } finally {
@@ -120,9 +122,7 @@ export default function ResultsPage() {
       );
 
       setCourseAverage(averages);
-      console.log("Course Averages:", averages);
     } catch (error) {
-      console.error(error);
       setCourseAverage([]);
     }
   };
@@ -156,10 +156,6 @@ export default function ResultsPage() {
       fetchGrades(searchResult.name);
     }
   }, [searchResult]);
-
-  useEffect(() => {
-    console.log("Course Average updated:", courseAverage);
-  }, [courseAverage]);
 
   return (
     <div className="min-h-screen bg-white px-4 py-12">

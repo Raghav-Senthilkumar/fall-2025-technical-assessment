@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom"; // import useNavigate
+import { useNavigate, useLocation } from "react-router-dom"; // import useNavigate
 import { Search, ChevronRight } from "lucide-react";
 import gsap from "gsap";
 
@@ -14,6 +14,7 @@ export default function LandingPage() {
   const footerRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate(); // hook for navigation
+  const location = useLocation(); //
 
   const handleSearch = () => {
     if (!searchQuery.trim()) return; // ignore empty searches
@@ -28,8 +29,9 @@ export default function LandingPage() {
     const storedNames: string[] = JSON.parse(
       localStorage.getItem("recentProfessors") || "[]"
     );
+    console.log("📦 LocalStorage recentProfessors:", storedNames);
     setRecentSearches(storedNames);
-  }, []);
+  }, [location]);
 
   useEffect(() => {
     const tl = gsap.timeline();
